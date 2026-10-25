@@ -188,63 +188,63 @@ def get_current_naw(check_date=None):
     month = check_date.month
     day = check_date.day
     
-    if (month == 5 and day >= 12) or (month == 5 and day < 25):
+    if (month == 5 and 12 <= day < 25):
         return "ثريا"
     elif (month == 5 and day >= 25) or (month == 6 and day < 7):
         return "ثريا"
-    elif (month == 6 and day >= 7) or (month == 6 and day < 20):
+    elif (month == 6 and 7 <= day < 20):
         return "ثريا"
     elif (month == 6 and day >= 20) or (month == 7 and day < 3):
         return "تويبع"
-    elif (month == 7 and day >= 3) or (month == 7 and day < 16):
+    elif (month == 7 and 3 <= day < 16):
         return "جوزاء"
-    elif (month == 7 and day >= 16) or (month == 7 and day < 29):
+    elif (month == 7 and 16 <= day < 29):
         return "جوزاء"
     elif (month == 7 and day >= 29) or (month == 8 and day < 11):
         return "مرزم"
-    elif (month == 8 and day >= 11) or (month == 8 and day < 24):
+    elif (month == 8 and 11 <= day < 24):
         return "كليبين"
     elif (month == 8 and day >= 24) or (month == 9 and day < 6):
         return "سهيل"
-    elif (month == 9 and day >= 6) or (month == 9 and day < 20):
+    elif (month == 9 and 6 <= day < 20):
         return "سهيل"
     elif (month == 9 and day >= 20) or (month == 10 and day < 3):
         return "سهيل"
-    elif (month == 10 and day >= 3) or (month == 10 and day < 16):
+    # التعديل الصحيح لفترات شهر أكتوبر:
+    elif (month == 10 and 3 <= day < 16):
         return "سهيل"
-    elif (month == 10 and day >= 16) or (month == 10 and day < 29):
+    elif (month == 10 and 16 <= day < 29):
         return "وسم"
     elif (month == 10 and day >= 29) or (month == 11 and day < 11):
         return "وسم"
-    elif (month == 11 and day >= 11) or (month == 11 and day < 24):
+    elif (month == 11 and 11 <= day < 24):
         return "وسم"
     elif (month == 11 and day >= 24) or (month == 12 and day < 7):
         return "وسم"
-    elif (month == 12 and day >= 7) or (month == 12 and day < 20):
+    elif (month == 12 and 7 <= day < 20):
         return "مربعانيه"
     elif (month == 12 and day >= 20) or (month == 1 and day < 2):
         return "مربعانيه"
-    elif (month == 1 and day >= 2) or (month == 1 and day < 15):
+    elif (month == 1 and 2 <= day < 15):
         return "مربعانيه"
-    elif (month == 1 and day >= 15) or (month == 1 and day < 28):
+    elif (month == 1 and 15 <= day < 28):
         return "شبط"
     elif (month == 1 and day >= 28) or (month == 2 and day < 10):
         return "شبط"
-    elif (month == 2 and day >= 10) or (month == 2 and day < 23):
+    elif (month == 2 and 10 <= day < 23):
         return "عقارب"
     elif (month == 2 and day >= 23) or (month == 3 and day < 8):
         return "عقارب"
-    elif (month == 3 and day >= 8) or (month == 3 and day < 21):
+    elif (month == 3 and 8 <= day < 21):
         return "عقارب"
     elif (month == 3 and day >= 21) or (month == 4 and day < 3):
         return "حميمين"
-    elif (month == 4 and day >= 3) or (month == 4 and day < 16):
+    elif (month == 4 and 3 <= day < 16):
         return "حميمين"
-    elif (month == 4 and day >= 16) or (month == 4 and day < 29):
+    elif (month == 4 and 16 <= day < 29):
         return "ذراعين"
     else:
         return "ذراعين"
-
 # ==========================================
 # 2. محرك قراءة الخريطة الفلكية التلقائي وتطبيق القواعد الكلاسيكية الكاملة
 # ==========================================
