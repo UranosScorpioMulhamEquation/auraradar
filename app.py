@@ -474,7 +474,7 @@ if submitted:
         is_night = True if "ليل" in is_night_radio else False
         time_val = 340 if is_night else 400
         
-        current_naw_name = get_current_naw(datetime.combine(birth_date, tob))
+        current_naw_name = get_current_naw(datetime.now())
         val_naw = calculate_name_value(current_naw_name, is_composite_first_box=False)
 
         total_sum = (val_first + val_mother + digits_sum + val_zodiac_name + 
