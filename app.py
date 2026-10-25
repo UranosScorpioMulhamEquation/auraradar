@@ -79,7 +79,7 @@ def get_utc_julian_day(date_obj: date, time_obj: time, tz_str: str) -> float:
     )
 
 # ==========================================
-# 1. جدول الحروف الأبجدية الكامل (الجمل الكبير مع التاء المربوطة والهاء)
+# 1. جدول الحروف الأبجدية الكامل (الجمل الكبير)
 # ==========================================
 ABJAD_DICT = {
     'ا': 1, 'أ': 1, 'إ': 1, 'آ': 1,
@@ -178,7 +178,7 @@ def reduce_to_12(number):
     return number
 
 # ==========================================
-# قاموس الأنوية الفلكية الكامل (بدون أي اختصار)
+# قاموس الأنوية الفلكية الكامل (مصحح بالشروط المنطقية)
 # ==========================================
 def get_current_naw(check_date=None):
     """تحديد النوء الفلكي الحالي بناءً على التاريخ بدقة متناهية"""
@@ -210,7 +210,6 @@ def get_current_naw(check_date=None):
         return "سهيل"
     elif (month == 9 and day >= 20) or (month == 10 and day < 3):
         return "سهيل"
-    # التعديل الصحيح لفترات شهر أكتوبر:
     elif (month == 10 and 3 <= day < 16):
         return "سهيل"
     elif (month == 10 and 16 <= day < 29):
@@ -245,6 +244,7 @@ def get_current_naw(check_date=None):
         return "ذراعين"
     else:
         return "ذراعين"
+
 # ==========================================
 # 2. محرك قراءة الخريطة الفلكية التلقائي وتطبيق القواعد الكلاسيكية الكاملة
 # ==========================================
@@ -258,7 +258,6 @@ class AutoChartReader:
         self._calculate()
 
     def _calculate(self):
-        # استخدام نظام كل برج بيت (Whole Sign Houses) لتحديد البيوت بدقة تراثية
         flags = swe.FLG_SWIEPH | swe.FLG_SPEED
         cusps, ascmc = swe.houses(self.jd, self.lat, self.lng, b'W')
         asc_lon = ascmc[0]
@@ -278,7 +277,6 @@ class AutoChartReader:
                 "is_retro": pos[3] < 0
             })
 
-        # إضافة كيتو (الذنب / South Node) المقابل لراهو
         rahu = next((p for p in self.planets_data if p["body"] == "راهو"), None)
         if rahu:
             ketu_lon = (rahu["lon"] + 180) % 360
@@ -294,8 +292,6 @@ class AutoChartReader:
             })
 
     def analyze_magic_perpetrator(self) -> Dict[str, Any]:
-        # القواعد الكلاسيكية الكاملة المعتمدة في المراجع العربية:
-        # البيت 12 (الخبايا والأسرار والسحر المدفون)، البيت 6 (الأمراض والعمالة)، البيت 8 (التدمير والسحر الأسود).
         h12_sign_idx = (self.ascendant_sign_idx + 11) % 12
         h12_sign = ZODIAC_SIGNS[h12_sign_idx]
         h12_ruler = SIGN_RULERS.get(h12_sign)
@@ -312,7 +308,6 @@ class AutoChartReader:
         ketu_in_affliction = any(p["body"] == "كيتو" and p["house"] in [6, 8, 12] for p in self.planets_data)
         neptune_in_affliction = any(p["body"] == "نبتون" and p["house"] in [6, 8, 12] for p in self.planets_data)
 
-        # قواعد البيوت المشتقة لتحديد صلة قرابة الفاعل بدقة متناهية:
         perpetrator_clues = []
         
         if h12_ruler_house == 3:
@@ -334,7 +329,6 @@ class AutoChartReader:
         else:
             perpetrator_clues.append(f"🔍 **دلالة البيت {h12_ruler_house}:** شخص خفي أو طرف يعمل بالسر التام بعيداً عن المحيط المباشر.")
 
-        # النحوس الطاقية وطبيعة الإصابة في المراجع العربية:
         nature_clues = []
         if saturn_in_affliction or (ruler_p and ruler_p["body"] == "زحل"):
             nature_clues.append("🌑 **أثر زحل (السحر الأرضي/المدفون):** دلالة على سحر مدفون في المقابر، أرض، أو معقود بالعظام والحديد القديم، وغالباً الفاعل شخص مسن أو ذو تحكم صارم.")
@@ -460,43 +454,55 @@ if submitted:
         chart_reader = AutoChartReader(jd, lat, lng)
         magic_analysis = chart_reader.analyze_magic_perpetrator()
 
+        # 1. حساب أرقام تاريخ الميلاد
         birth_date_str = f"{birth_date.day}.{birth_date.month}.{birth_date.year}"
         digits_sum = sum(int(char) for char in birth_date_str if char.isdigit())
+        
+        # 2. حساب البرج الباطني وقيمته الحرفية
         zodiac_calc = val_first + val_mother
         zodiac_index = reduce_to_12(zodiac_calc)
         zodiac_name = ZODIAC_MAP.get(zodiac_index, 'حمل')
         val_zodiac_name = calculate_name_value(zodiac_name, is_composite_first_box=False)
 
+        # 3. حساب النوء الفلكي الحالي وقيمته
+        current_naw_name = get_current_naw(datetime.now())
+        val_naw = calculate_name_value(current_naw_name, is_composite_first_box=False)
+
+        # 4. حساب اليوم الحالي والكوكب المرتبط به وقيمتهما الحرفية
         day_info = DAYS_PLANETS.get(day_key.lower(), DAYS_PLANETS['اربعاء'])
         val_day = calculate_name_value(day_info['day_name'], is_composite_first_box=False)
         planet_name = day_info['planet']
         val_planet = calculate_name_value(planet_name, is_composite_first_box=False)
+
+        # 5. حساب وقت الكشف (340 ليل / 400 نهار)
         is_night = True if "ليل" in is_night_radio else False
         time_val = 340 if is_night else 400
-        
-        current_naw_name = get_current_naw(datetime.now())
-        val_naw = calculate_name_value(current_naw_name, is_composite_first_box=False)
+        time_label = "ليل (قمر)" if is_night else "نهار (شمس)"
 
+        # 6. المجموع الكلي وفق العناصر الثمانية للتنجيم التراثي
         total_sum = (val_first + val_mother + digits_sum + val_zodiac_name + 
-                     val_day + val_planet + time_val + val_naw)
+                     val_naw + val_day + val_planet + time_val)
         final_result_num = reduce_to_12(total_sum)
 
         st.success("تم إتمام التحليل التراثي والفلكي الشامل بنجاح!")
         
         st.markdown("---")
-        st.subheader("📊 تفاصيل القيم الحرفية والبرج الباطني والنوء:")
+        st.subheader("📊 تفاصيل القيم الحرفية وعناصر الكشف التراثي الثمانية:")
         col_res1, col_res2 = st.columns(2)
         with col_res1:
-            st.write(f"• **الاسم الأول المدخل ({full_first_name}):** مجموع قيمته = {val_first}")
-            st.write(f"• **اسم الأم المدخل ({full_mother_name}):** مجموع قيمته = {val_mother}")
-            st.write(f"• **مجموع خانات تاريخ الميلاد:** {digits_sum}")
-            st.write(f"• **البرج الباطني المستخرج:** {zodiac_name} (رقم {zodiac_index} - قيمته: {val_zodiac_name})")
+            st.write(f"1. **الاسم الأول المدخل ({full_first_name}):** مجموع قيمته = {val_first}")
+            st.write(f"2. **اسم الأم المدخل ({full_mother_name}):** مجموع قيمته = {val_mother}")
+            st.write(f"3. **مجموع خانات تاريخ الميلاد:** {digits_sum}")
+            st.write(f"4. **البرج الباطني المستخرج:** {zodiac_name} (رقم {zodiac_index} - قيمته الحرفية: {val_zodiac_name})")
+            st.write(f"5. **النوء الفلكي الحالي:** {current_naw_name} (قيمته الحرفية: {val_naw})")
             
         with col_res2:
+            st.write(f"6. **اليوم الحالي للحساب:** {day_info['day_name']} (قيمته الحرفية: {val_day})")
+            st.write(f"7. **الكوكب المرتبط باليوم:** {planet_name} (قيمته الحرفية: {val_planet})")
+            st.write(f"8. **الوقت الحالي للكشف:** {time_label} (القيمة الرقمية: {time_val})")
             st.write(f"• **برج الطالع الفلكي الحقيقي:** {ZODIAC_SIGNS[chart_reader.ascendant_sign_idx]}")
-            st.write(f"• **النوء الفلكي المسيطر:** {current_naw_name} (القيمة: {val_naw})")
             st.write(f"• **حاكم البيت الثاني عشر:** {magic_analysis['h12_ruler']} (يستقر في البيت {magic_analysis['h12_ruler_house']})")
-            st.write(f"• **المجموع الكلي الثماني:** {total_sum} | **النتيجة النهائية:** {final_result_num}")
+            st.markdown(f"### 🧮 **المجموع الثماني الكلي:** `{total_sum}` | **النتيجة النهائية (المقسوم على 12):** `{final_result_num}`")
 
         st.markdown("---")
         st.subheader("🕵️‍♂️ تقرير كشف هوية الفاعل وصلة القرابة (وفق مراجع التنجيم العربي الكلاسيكي):")
@@ -559,16 +565,20 @@ if submitted:
             <b>اسم المستفيد:</b> {full_first_name} | <b>اسم الأم:</b> {full_mother_name} | <b>تاريخ الميلاد:</b> {birth_date} ({birth_hour}:{birth_minute}) | <b>الموقع:</b> {selected_country_name} - {selected_city_name}
         </div>
 
-        <h2>📊 القيم الحرفية والبرج الباطني والنوء:</h2>
+        <h2>📊 القيم الحرفية وعناصر الكشف التراثي الثمانية:</h2>
         <div class="card">
-            <p>• <b>الاسم الأول المدخل:</b> {full_first_name} (المجموع: {val_first})</p>
-            <p>• <b>اسم الأم المدخل:</b> {full_mother_name} (المجموع: {val_mother})</p>
-            <p>• <b>مجموع خانات تاريخ الميلاد:</b> {digits_sum}</p>
-            <p>• <b>البرج الباطني المستخرج:</b> {zodiac_name} (رقم {zodiac_index} - القيمة: {val_zodiac_name})</p>
+            <p>1. <b>الاسم الأول المدخل:</b> {full_first_name} (المجموع: {val_first})</p>
+            <p>2. <b>اسم الأم المدخل:</b> {full_mother_name} (المجموع: {val_mother})</p>
+            <p>3. <b>مجموع خانات تاريخ الميلاد:</b> {digits_sum}</p>
+            <p>4. <b>البرج الباطني المستخرج:</b> {zodiac_name} (رقم {zodiac_index} - القيمة الحرفية: {val_zodiac_name})</p>
+            <p>5. <b>النوء الفلكي الحالي:</b> {current_naw_name} (القيمة الحرفية: {val_naw})</p>
+            <p>6. <b>اليوم الحالي للحساب:</b> {day_info['day_name']} (القيمة الحرفية: {val_day})</p>
+            <p>7. <b>الكوكب المرتبط باليوم:</b> {planet_name} (القيمة الحرفية: {val_planet})</p>
+            <p>8. <b>الوقت الحالي للكشف:</b> {time_label} (القيمة الرقمية: {time_val})</p>
+            <hr>
             <p>• <b>برج الطالع الفلكي الحقيقي:</b> {ZODIAC_SIGNS[chart_reader.ascendant_sign_idx]}</p>
-            <p>• <b>النوء الفلكي المسيطر:</b> {current_naw_name} (القيمة: {val_naw})</p>
             <p>• <b>حاكم البيت الثاني عشر:</b> {magic_analysis['h12_ruler']} (يستقر في البيت {magic_analysis['h12_ruler_house']})</p>
-            <p>• <b>المجموع الكلي الثماني:</b> {total_sum} | <b>النتيجة النهائية:</b> {final_result_num}</p>
+            <p style="font-size: 16px; font-weight: bold; color: #1e3a8a;">• المجموع الثماني الكلي: {total_sum} | النتيجة النهائية: {final_result_num}</p>
         </div>
 
         <h2>🕵️‍♂️ تقرير كشف هوية الفاعل وصلة القرابة:</h2>
