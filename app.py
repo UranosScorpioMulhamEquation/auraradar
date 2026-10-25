@@ -143,6 +143,18 @@ BODIES = {
     "راهو": swe.TRUE_NODE,
 }
 
+# قائمة النجوم الثابتة التأثيرية الكبرى ومواقعها الفلكية المقربة
+MAJOR_FIXED_STARS = {
+    "الغول (Algol)": {"lon": 56.2, "nature": "نحس شديد والسحر الأسود"},
+    "الدبران (Aldebaran)": {"lon": 69.8, "nature": "خومات وصراعات حادة"},
+    "الشعرى اليمانية (Sirius)": {"lon": 104.2, "nature": "قوة طاقية وروحانية عالية"},
+    "قلب الأسد (Regulus)": {"lon": 150.1, "nature": "سلطة وتسلط وتسليط"},
+    "السماك الأعزل (Spica)": {"lon": 204.0, "nature": "حماية أو تحصين"},
+    "قلب العقرب (Antares)": {"lon": 249.8, "nature": "أذى ناري ووساوس وسموم"},
+    "النسر الواقع (Vega)": {"lon": 285.3, "nature": "أعمال خفية وطلاسم"},
+    "فم الحوت (Fomalhaut)": {"lon": 343.9, "nature": "أعمال سحرية مرتبطة بالماء والمحيطات"}
+}
+
 DAYS_PLANETS = {
     'احد': {'planet': 'شمس', 'day_name': 'احد'},
     'اثنين': {'planet': 'قمر', 'day_name': 'اثنين'},
@@ -246,7 +258,7 @@ def get_current_naw(check_date=None):
         return "ذراعين"
 
 # ==========================================
-# 2. محرك قراءة الخريطة الفلكية التلقائي وتطبيق القواعد الكلاسيكية الكاملة
+# 2. محرك قراءة الخريطة الفلكية وتحديد صفات الفاعل والنجوم الثابتة والتوقيت
 # ==========================================
 class AutoChartReader:
     def __init__(self, jd: float, lat: float, lng: float):
@@ -255,13 +267,14 @@ class AutoChartReader:
         self.lng = lng
         self.planets_data = []
         self.ascendant_sign_idx = 0
+        self.ascendant_lon = 0.0
         self._calculate()
 
     def _calculate(self):
         flags = swe.FLG_SWIEPH | swe.FLG_SPEED
         cusps, ascmc = swe.houses(self.jd, self.lat, self.lng, b'W')
-        asc_lon = ascmc[0]
-        self.ascendant_sign_idx = int(asc_lon // 30)
+        self.ascendant_lon = ascmc[0]
+        self.ascendant_sign_idx = int(self.ascendant_lon // 30)
 
         for b_name, b_id in BODIES.items():
             pos, _ = swe.calc_ut(self.jd, b_id, flags)
@@ -274,7 +287,8 @@ class AutoChartReader:
                 "sign": ZODIAC_SIGNS[sign_idx],
                 "sign_idx": sign_idx,
                 "house": house_num,
-                "is_retro": pos[3] < 0
+                "is_retro": pos[3] < 0,
+                "speed": pos[3]
             })
 
         rahu = next((p for p in self.planets_data if p["body"] == "راهو"), None)
@@ -288,8 +302,55 @@ class AutoChartReader:
                 "sign": ZODIAC_SIGNS[ketu_sign_idx],
                 "sign_idx": ketu_sign_idx,
                 "house": ketu_house,
-                "is_retro": True
+                "is_retro": True,
+                "speed": -0.05
             })
+
+    def check_fixed_stars(self) -> List[str]:
+        """فحص اقتران الكواكب الحاكمة أو المنحوسة بالنجوم الثابتة الخطرة"""
+        star_clues = []
+        for p in self.planets_data:
+            if p["house"] in [1, 6, 8, 12]:
+                for star_name, star_info in MAJOR_FIXED_STARS.items():
+                    diff = abs(p["lon"] - star_info["lon"])
+                    if diff > 180:
+                        diff = 360 - diff
+                    if diff <= 1.5:  # جُرم اقتران 1.5 درجة
+                        star_clues.append(
+                            f"⭐ **اقتران نجمي مؤثر:** كوكب ({p['body']}) مقترن بالنجم الثابت **[{star_name}]** (على درجة {star_info['lon']}°). "
+                            f"الدلالة التراثية: {star_info['nature']}."
+                        )
+        return star_clues
+
+    def estimate_damage_timing(self) -> str:
+        """حساب توقيت وتاريخ وقوع الأذية بناءً على المسافة القوسية وطبيعة حركة البرج"""
+        h12_sign_idx = (self.ascendant_sign_idx + 11) % 12
+        h12_sign = ZODIAC_SIGNS[h12_sign_idx]
+        h12_ruler = SIGN_RULERS.get(h12_sign)
+        ruler_p = next((p for p in self.planets_data if p["body"] == h12_ruler), None)
+
+        if not ruler_p:
+            return "توقيت الأذية: غير محدد بدقة لكتمان حركة الحاكم."
+
+        # حساب المسافة القوسية بين حاكم 12 والطالع
+        arc_diff = abs(ruler_p["lon"] - self.ascendant_lon)
+        if arc_diff > 180:
+            arc_diff = 360 - arc_diff
+
+        cardinal_signs = ["الحمل", "السرطان", "الميزان", "الجدي"]
+        fixed_signs = ["الثور", "الأسد", "العقرب", "الدلو"]
+
+        if h12_sign in cardinal_signs:
+            time_unit = "أيام إلى أسابيع"
+            estimated_time = f"سريعة ومباشرة (خلال {int(arc_diff % 30) + 1} {time_unit})"
+        elif h12_sign in fixed_signs:
+            time_unit = "سنوات"
+            estimated_time = f"قديمة ومستمرة وتراكمية (منذ حوالي {int(arc_diff % 12) + 1} {time_unit})"
+        else:
+            time_unit = "أشهر"
+            estimated_time = f"متوسطة التكتم والتجديد (تحدث كل {int(arc_diff % 12) + 1} {time_unit})"
+
+        return f"⏱️ **توقيت وتاريخ وقوع الأذية المتوقع:** الأذية ذات طبيعة {estimated_time} بناءً على المسافة القوسية للبرج {h12_sign}."
 
     def analyze_magic_perpetrator(self) -> Dict[str, Any]:
         h12_sign_idx = (self.ascendant_sign_idx + 11) % 12
@@ -308,8 +369,39 @@ class AutoChartReader:
         ketu_in_affliction = any(p["body"] == "كيتو" and p["house"] in [6, 8, 12] for p in self.planets_data)
         neptune_in_affliction = any(p["body"] == "نبتون" and p["house"] in [6, 8, 12] for p in self.planets_data)
 
+        # 1. تحديد الجنس (رجل / امرأة)
+        feminine_signs = ["الثور", "السرطان", "العذراء", "العقرب", "الجدي", "الحوت"]
+        feminine_planets = ["القمر", "الزهرة", "نبتون"]
+        is_fem = (h12_ruler in feminine_planets) or (h12_sign in feminine_signs) or any(p in feminine_planets for p in planets_in_12)
+        perpetrator_gender = "امرأة (أنثى)" if is_fem else "رجل (ذكر)"
+
+        # 2. تحديد الفئة العمرية
+        if h12_ruler == "زحل" or saturn_in_affliction:
+            perpetrator_age = "كبير السن (فوق 50 سنة - طاقة زحل الشائخة)"
+        elif h12_ruler in ["المشتري", "المريخ", "الشمس"] or mars_in_affliction:
+            perpetrator_age = "في منتصف العمر (بين 30 و 50 سنة - طاقة النضج والقوة)"
+        else:
+            perpetrator_age = "في سن الشباب (تحت 30 سنة - طاقة سريعة أو طائشة)"
+
+        # 3. صلة القرابة
+        relative_houses = [3, 4, 8, 9, 5]
+        if h12_ruler_house in relative_houses:
+            is_relative_text = "نعم، الفاعل من الأقارب أو الأصهار والمحيط العائلي المباشر"
+        else:
+            is_relative_text = "ليس بالضرورة من الأقارب المباشرين (قد يكون جاراً، زميل عمل، أو معرفة خارجية)"
+
+        # 4. مكان وجود الفاعل
+        mutable_signs = ["الجوزاء", "العذراء", "القوس", "الحوت"]
+        if h12_sign in mutable_signs or h12_ruler_house in [9, 12]:
+            distance_text = "عن بُعد (محتمل جداً أنه يتواجد في مدينة أخرى أو بلد بعيد وقام بالأذية طاقياً عن بُعد)"
+        else:
+            distance_text = "في نفس البلد والمحيط الجغرافي القريب"
+
+        # 5. استخراج اقترانات النجوم الثابتة وتوقيت الأذية
+        star_clues = self.check_fixed_stars()
+        damage_timing = self.estimate_damage_timing()
+
         perpetrator_clues = []
-        
         if h12_ruler_house == 3:
             perpetrator_clues.append("🔍 **دلالة البيت الثالث (الإخوة والجيران):** الفاعل من الإخوة، الأخوات، أبناء العمومة، أو الجار الملاصق.")
         elif h12_ruler_house == 9:
@@ -317,13 +409,13 @@ class AutoChartReader:
         elif h12_ruler_house == 4:
             perpetrator_clues.append("🔍 **دلالة البيت الرابع (الأصل والبيت):** الأذى من جذور العائلة، الأب، أفراد البيت الواحد، أو مسكن مشترك.")
         elif h12_ruler_house == 10:
-            perpetrator_clues.append("🔍 **دلالة البيت العاشر (السلطة وأم الشريك):** الفاعل شخص ذو سلطة، رب العمل، أو (أم الزوج / أم الزوجة - الحماة) بناءً على اشتفاق البيت العاشر بالنسبة للبيت السابع.")
+            perpetrator_clues.append("🔍 **دلالة البيت العاشر (السلطة وأم الشريك):** الفاعل شخص ذو سلطة، رب العمل، أو (أم الزوج / أم الزوجة - الحماة).")
         elif h12_ruler_house == 7:
             perpetrator_clues.append("🔍 **دلالة البيت السابع (الخصوم والشركاء):** الفاعل هو شريك الحياة (الزوج/الزوجة الحالي أو السابق)، شريك تجاري، أو عدو معلن.")
         elif h12_ruler_house == 8:
-            perpetrator_clues.append("🔍 **دلالة البيت الثامن (أهل الشريك والمال المشترك):** الأذى مدبر من جهة (أهل الزوج أو أهل الزوجة)، أو أقارب الشريك وطمّاعي المواريث.")
+            perpetrator_clues.append("🔍 **دلالة البيت الثامن (أهل الشريك والمال المشترك):** الأذى مدبر من جهة (أهل الزوج أو أهل الزوجة)، أو طمّاعي المواريث.")
         elif h12_ruler_house == 5:
-            perpetrator_clues.append("🔍 **دلالة البيت الخامس (الأبناء والعشاق):** الفاعل قد يكون (عشيقة، زوجة الابن / الكنة)، أو طرف ثالث تربطه علاقة عاطفية محرمة.")
+            perpetrator_clues.append("🔍 **دلالة البيت الخامس (الأبناء والعشاق):** الفاعل قد يكون (عشيقة، زوجة الابن / الكنة)، أو طرف ثالث تربطه علاقة عاطفية.")
         elif h12_ruler_house == 11:
             perpetrator_clues.append("🔍 **دلالة البيت الحادي عشر (الأصدقاء):** الأذى من صديق مقرب أو شبكة علاقات تظهر المودة وتضمر الحقد.")
         else:
@@ -331,13 +423,13 @@ class AutoChartReader:
 
         nature_clues = []
         if saturn_in_affliction or (ruler_p and ruler_p["body"] == "زحل"):
-            nature_clues.append("🌑 **أثر زحل (السحر الأرضي/المدفون):** دلالة على سحر مدفون في المقابر، أرض، أو معقود بالعظام والحديد القديم، وغالباً الفاعل شخص مسن أو ذو تحكم صارم.")
+            nature_clues.append("🌑 **أثر زحل (السحر الأرضي/المدفون):** دلالة على سحر مدفون في المقابر، أرض، أو معقود بالعظام والحديد القديم.")
         if mars_in_affliction or (ruler_p and ruler_p["body"] == "المريخ"):
-            nature_clues.append("🔥 **أثر المريخ (السحر الناري/الدموي):** دلالة على عمل مرشوش بمواد محترقة أو دم، والفاعل متسرع، عدائي، أو يلجأ للعنف الظاهري.")
+            nature_clues.append("🔥 **أثر المريخ (السحر الناري/الدموي):** دلالة على عمل مرشوش بمواد محترقة أو دم، والفاعل متسرع أو عدائي.")
         if ketu_in_affliction:
-            nature_clues.append("🐍 **أثر الذنب / الكيتو (السحر الأسود):** دلالة قاطعة على سحر أسود ونجس يعتمد على النجاسات والطلاسم المظلمة المدبرة بليل.")
+            nature_clues.append("🐍 **أثر الذنب / الكيتو (السحر الأسود):** دلالة قاطعة على سحر أسود ونجس يعتمد على النجاسات والطلاسم المظلمة.")
         if neptune_in_affliction:
-            nature_clues.append("💧 **أثر نبتون (السحر المرشوش/السائل):** دلالة على أعمال سائلة، أوهام، أو سحر خفي تدبره امرأة أو شخص مراوغ بطرق خبيثة.")
+            nature_clues.append("💧 **أثر نبتون (السحر المرشوش/السائل):** دلالة على أعمال سائلة، أوهام، أو سحر خفي تدبره امرأة مراوغة.")
 
         if not nature_clues:
             nature_clues.append("⚡ **طبيعة عامة:** أذى طاقي خفي يتم عبر طلاسم أو حسد مكثف مقصود ومخطط له بالسر.")
@@ -346,6 +438,12 @@ class AutoChartReader:
             "h12_sign": h12_sign,
             "h12_ruler": h12_ruler,
             "h12_ruler_house": h12_ruler_house,
+            "perpetrator_gender": perpetrator_gender,
+            "perpetrator_age": perpetrator_age,
+            "is_relative_text": is_relative_text,
+            "distance_text": distance_text,
+            "star_clues": star_clues,
+            "damage_timing": damage_timing,
             "planets_in_12": planets_in_12,
             "planets_in_6": planets_in_6,
             "planets_in_8": planets_in_8,
@@ -356,9 +454,9 @@ class AutoChartReader:
 # ==========================================
 # 3. واجهة المستخدم عبر Streamlit (ديناميكية للتحديث الفوري)
 # ==========================================
-st.set_page_config(page_title="نظام كشف الطاقات السلبية", layout="wide")
+st.set_page_config(page_title="نظام كشف الطاقات السلبية المطور", layout="wide")
 
-st.title("🔮 نظام كشف أمراض الهالة الروحانية من علم الحرف و التنجيم العربي")
+st.title("🔮 نظام كشف أمراض الهالة الروحانية من علم الحرف والتنجيم العربي المطور")
 st.markdown("---")
 
 country_map, sorted_country_names = get_sorted_countries()
@@ -415,7 +513,7 @@ is_night_radio = st.radio(
     index=1
 )
 
-submitted = st.button("✨ إطلاق التقرير التراثي الشامل وكشف الفاعل")
+submitted = st.button("✨ إطلاق التقرير التراثي الشامل وكشف الفاعل والنجوم الثابتة")
 
 if submitted:
     if first_name_type == "مفرد":
@@ -484,7 +582,7 @@ if submitted:
                      val_naw + val_day + val_planet + time_val)
         final_result_num = reduce_to_12(total_sum)
 
-        st.success("تم إتمام التحليل التراثي والفلكي الشامل بنجاح!")
+        st.success("تم إتمام التحليل التراثي والفلكي الشامل المطور بنجاح!")
         
         st.markdown("---")
         st.subheader("📊 تفاصيل القيم الحرفية وعناصر الكشف التراثي الثمانية:")
@@ -505,10 +603,24 @@ if submitted:
             st.markdown(f"### 🧮 **المجموع الثماني الكلي:** `{total_sum}` | **النتيجة النهائية (المقسوم على 12):** `{final_result_num}`")
 
         st.markdown("---")
-        st.subheader("🕵️‍♂️ تقرير كشف هوية الفاعل وصلة القرابة (وفق مراجع التنجيم العربي الكلاسيكي):")
+        st.subheader("🕵️‍♂️ تقرير كشف صفات الفاعل وتوقيت الأذية والدلالات النجمية:")
         
         st.info(f"📌 **تحليل البيت الثاني عشر:** برج البيت هو ({magic_analysis['h12_sign']}) وحاكمه ({magic_analysis['h12_ruler']}) يستقر في **البيت {magic_analysis['h12_ruler_house']}**.")
-        
+        st.info(magic_analysis['damage_timing'])
+
+        col_p1, col_p2 = st.columns(2)
+        with col_p1:
+            st.success(f"👤 **جنس الفاعل المتوقع:** {magic_analysis['perpetrator_gender']}")
+            st.success(f"👥 **صلة القرابة:** {magic_analysis['is_relative_text']}")
+        with col_p2:
+            st.warning(f"⏳ **الفئة العمرية:** {magic_analysis['perpetrator_age']}")
+            st.warning(f"🌍 **النطاق الجغرافي / البعد:** {magic_analysis['distance_text']}")
+
+        if magic_analysis['star_clues']:
+            st.subheader("⭐ الاتصالات بالنجوم الثابتة العظمى:")
+            for star in magic_analysis['star_clues']:
+                st.error(star)
+
         if magic_analysis['planets_in_12']:
             st.warning(f"⚠️ **تنبيه:** تواجد كواكب ({' ، '.join(magic_analysis['planets_in_12'])}) في البيت الثاني عشر يدعم قطعية الإصابة الخفية.")
 
@@ -535,16 +647,17 @@ if submitted:
             st.info(f"**{diagnosis_text}**")
 
         # ==========================================
-        # 📄 توليد تقرير HTML جاهز للطباعة والتحميل
+        # 📄 توليد تقرير HTML المطور جاهز للطباعة والتحميل
         # ==========================================
         perpetrator_html_items = "".join([f"<li>{c}</li>" for c in magic_analysis['perpetrator_clues']])
         nature_html_items = "".join([f"<li>{n}</li>" for n in magic_analysis['nature_clues']])
+        star_html_items = "".join([f"<li>{s}</li>" for s in magic_analysis['star_clues']]) if magic_analysis['star_clues'] else "<li>لا توجد اقترانات مباشرة بالنجوم النحسة الكبرى.</li>"
 
         html_report_content = f"""<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>التقرير الروحاني والتنجيم الشامل - {full_first_name}</title>
+    <title>التقرير الروحاني والتنجيم المطور - {full_first_name}</title>
     <style>
         body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #1e293b; padding: 25px; line-height: 1.6; }}
         .container {{ max-width: 850px; margin: auto; background: #ffffff; padding: 35px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }}
@@ -560,7 +673,7 @@ if submitted:
 </head>
 <body>
     <div class="container">
-        <h1>🔮 التقرير الروحاني والتنجيم الشامل لكشف الأذى والسحر</h1>
+        <h1>🔮 التقرير الروحاني والتنجيم المطور لكشف الفاعل والنجوم الثابتة</h1>
         <div class="meta">
             <b>اسم المستفيد:</b> {full_first_name} | <b>اسم الأم:</b> {full_mother_name} | <b>تاريخ الميلاد:</b> {birth_date} ({birth_hour}:{birth_minute}) | <b>الموقع:</b> {selected_country_name} - {selected_city_name}
         </div>
@@ -581,11 +694,24 @@ if submitted:
             <p style="font-size: 16px; font-weight: bold; color: #1e3a8a;">• المجموع الثماني الكلي: {total_sum} | النتيجة النهائية: {final_result_num}</p>
         </div>
 
-        <h2>🕵️‍♂️ تقرير كشف هوية الفاعل وصلة القرابة:</h2>
+        <h2>🕵️‍♂️ تقرير كشف هوية الفاعل وتوقيت الأذية:</h2>
         <div class="card" style="border-right-color: #d97706;">
+            <p>👤 <b>جنس الفاعل المتوقع:</b> {magic_analysis['perpetrator_gender']}</p>
+            <p>⏳ <b>الفئة العمرية للفاعل:</b> {magic_analysis['perpetrator_age']}</p>
+            <p>👥 <b>صلة القرابة:</b> {magic_analysis['is_relative_text']}</p>
+            <p>🌍 <b>النطاق الجغرافي / البعد:</b> {magic_analysis['distance_text']}</p>
+            <p>⏱️ <b>تقدير توقيت الأذية:</b> {magic_analysis['damage_timing']}</p>
+            <hr>
             <p><b>تحليل البيت الثاني عشر:</b> برج البيت هو ({magic_analysis['h12_sign']}) وحاكمه ({magic_analysis['h12_ruler']}) يستقر في البيت {magic_analysis['h12_ruler_house']}.</p>
             <ul>
                 {perpetrator_html_items}
+            </ul>
+        </div>
+
+        <h2>⭐ الاتصالات النجمية الكبرى:</h2>
+        <div class="card" style="border-right-color: #7c3aed;">
+            <ul>
+                {star_html_items}
             </ul>
         </div>
 
@@ -611,6 +737,6 @@ if submitted:
         st.download_button(
             label="📥 تحميل التقرير كملف HTML جاهز للطباعة والفتح",
             data=html_report_content,
-            file_name=f"Spiritual_Report_{full_first_name}.html",
+            file_name=f"Spiritual_Report_Advanced_{full_first_name}.html",
             mime="text/html"
         )
