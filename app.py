@@ -471,6 +471,45 @@ class AutoChartReader:
             "nature_clues": nature_clues
         }
 
+    def distinguish_envy_vs_magic(self) -> Dict[str, Any]:
+        """دالة متطورة للتمييز الفلكي الروحاني بين الإصابة بالسحر أو الحسد والعين"""
+        
+        # تتبع الكواكب في بيوت الخطر
+        h12_planets = [p for p in self.planets_data if p["house"] == 12]
+        h6_planets = [p for p in self.planets_data if p["house"] == 6]
+        
+        # فحص وجود نحوسات قوية (زحل أو كيتو أو المريخ)
+        saturn_mars_ketu_12 = any(p["body"] in ["زحل", "المريخ", "كيتو"] for p in h12_planets)
+        mars_afflicting_moon = False
+        
+        moon_p = next((p for p in self.planets_data if p["body"] == "القمر"), None)
+        mars_p = next((p for p in self.planets_data if p["body"] == "المريخ"), None)
+        
+        if moon_p and mars_p:
+            diff_lon = abs(moon_p["lon"] - mars_p["lon"])
+            if diff_lon > 180:
+                diff_lon = 360 - diff_lon
+            # اقتران أو تربيع أو مقابلة قريبة بين المريخ والقمر (دلالة قاطعة على العين والحسد الحار)
+            if diff_lon <= 7.0 or abs(diff_lon - 90) <= 7.0 or abs(diff_lon - 180) <= 7.0:
+                mars_afflicting_moon = True
+
+        # اتخاذ القرار الروحاني الفلكي بناءً على المعطيات
+        if saturn_mars_ketu_12 or any("الغول" in s for s in self.check_fixed_stars()):
+            diagnosis_type = "سحر أثري أو مدبّر بالسر (طابع البيت الثاني عشر والنجوم الثابتة النحسة)"
+            recommendation = "يتطلب علاجاً موجهاً لإبطال العقد وفك الارتباط الطاقي المظلم."
+        elif mars_afflicting_moon or len(h6_planets) > 0:
+            diagnosis_type = "حسد شديد أو إصابة بالعين (نظرة حارة تؤثر مباشرة على الهالة والجسد الأثيري)"
+            recommendation = "يتطلب علاجاً بالرقية، الاغتسال بماء مضاف إليه أثر الحاسد إن عرف، وآيات الحفظ والتحصين."
+        else:
+            diagnosis_type = "ضغوط طاقية عامة أو إرهاق هالة ناتج عن مخالطة اجتماعية"
+            recommendation = "يكفي فيها التحصينات اليومية وأذكار الصباح والمساء."
+
+        return {
+            "diagnosis_type": diagnosis_type,
+            "recommendation": recommendation,
+            "mars_afflicts_moon": mars_afflicting_moon
+        }
+
 # ==========================================
 # 3. الدالة الجديدة: اقتراح العلاج الروحاني وتحديد الآيات القرآنية والسورة والتكرار والطريقة
 # ==========================================
@@ -642,6 +681,7 @@ if submitted:
 
         chart_reader = AutoChartReader(jd, lat, lng)
         magic_analysis = chart_reader.analyze_magic_perpetrator()
+        envy_vs_magic = chart_reader.distinguish_envy_vs_magic()
         treatment_proposal = suggest_spiritual_treatment(val_first, val_mother, full_first_name, full_mother_name)
 
         # 1. حساب أرقام تاريخ الميلاد
@@ -721,6 +761,11 @@ if submitted:
 
         for nature in magic_analysis['nature_clues']:
             st.error(nature)
+
+        st.markdown("---")
+        st.subheader("🔬 التحليل الفلكي المتقدم للتمييز بين السحر والحسد والعين:")
+        st.error(f"🎯 **نوع الإصابة الفلكي:** {envy_vs_magic['diagnosis_type']}")
+        st.warning(f"💡 **التوجيه العلاجي الفلكي:** {envy_vs_magic['recommendation']}")
 
         st.markdown("---")
         st.subheader("🌿 مقترح العلاج الروحاني وتفكيك السحر (حسب الاسم واسم الأم):")
@@ -805,6 +850,12 @@ if submitted:
             <ul>
                 {perpetrator_html_items}
             </ul>
+        </div>
+
+        <h2>🔬 التحليل الفلكي المتقدم للتمييز بين السحر والحسد:</h2>
+        <div class="card" style="border-right-color: #8b5cf6;">
+            <p>🎯 <b>نوع الإصابة الفلكي:</b> {envy_vs_magic['diagnosis_type']}</p>
+            <p>💡 <b>التوجيه العلاجي المقترح:</b> {envy_vs_magic['recommendation']}</p>
         </div>
 
         <h2>🌿 مقترح العلاج الروحاني وفك السحر (مخصص بالاسم واسم الأم):</h2>
