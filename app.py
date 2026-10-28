@@ -258,7 +258,7 @@ def get_current_naw(check_date=None):
         return "ذراعين"
 
 # ==========================================
-# 2. محرك قراءة الخريطة الفلكية وتحديد صفات الفاعل والنجوم الثابتة والتوقيت
+# 2. محرك قراءة الخريطة الفلكية وتحديد صفات الفاعل والنجوم الثابتة والتوقيت والعلاج
 # ==========================================
 class AutoChartReader:
     def __init__(self, jd: float, lat: float, lng: float):
@@ -323,7 +323,7 @@ class AutoChartReader:
         return star_clues
 
     def estimate_damage_timing(self) -> str:
-        """حساب توقيت وتاريخ وقوع الأذية بناءً على المسافة القوسية وطبيعة حركة البرج"""
+        """حساب وتفحص هل الأذية قديمة أم جديدة، وتحديد نطاق بدء الأذى بالأشهر بدقة فلكية وتوقيت وقوعها"""
         h12_sign_idx = (self.ascendant_sign_idx + 11) % 12
         h12_sign = ZODIAC_SIGNS[h12_sign_idx]
         h12_ruler = SIGN_RULERS.get(h12_sign)
@@ -339,18 +339,24 @@ class AutoChartReader:
 
         cardinal_signs = ["الحمل", "السرطان", "الميزان", "الجدي"]
         fixed_signs = ["الثور", "الأسد", "العقرب", "الدلو"]
+        mutable_signs = ["الجوزاء", "العذراء", "القوس", "الحوت"]
+
+        # حساب نطاق الأشهر بدقة استناداً إلى حركة الحاكم والبرج
+        calculated_months = int((arc_diff / 30) * 12) + 1
+        if calculated_months > 24:
+            calculated_months = calculated_months % 24 + 1
 
         if h12_sign in cardinal_signs:
-            time_unit = "أيام إلى أسابيع"
-            estimated_time = f"سريعة ومباشرة (خلال {int(arc_diff % 30) + 1} {time_unit})"
+            status_type = "أذية جديدة كلياً (طارئة)"
+            timing_details = f"حدثت خلال الأيام أو الأسابيع القليلة الماضية وتحديداً منذ حوالي {int(arc_diff % 30) + 1} أيام إلى شهر كحد أقصى."
         elif h12_sign in fixed_signs:
-            time_unit = "سنوات"
-            estimated_time = f"قديمة ومستمرة وتراكمية (منذ حوالي {int(arc_diff % 12) + 1} {time_unit})"
+            status_type = "أذية قديمة ومتأصلة ومستمرة"
+            timing_details = f"الأذية قديمة وتراكمية ومستمرة منذ عدة أشهر طويلة أو سنوات (نطاق البدء منذ حوالي {int(arc_diff / 10) + 1} إلى {int(arc_diff / 5) + 2} أشهر أو أكثر)."
         else:
-            time_unit = "أشهر"
-            estimated_time = f"متوسطة التكتم والتجديد (تحدث كل {int(arc_diff % 12) + 1} {time_unit})"
+            status_type = "أذية متجددة (متوسطة الحداثة)"
+            timing_details = f"بدأت الأذية قبل نطاق زمني يقدر بـ {max(1, calculated_months - 1)} إلى {calculated_months + 1} أشهر تقريباً، وهي تتجدد دورياً."
 
-        return f"⏱️ **توقيت وتاريخ وقوع الأذية المتوقع:** الأذية ذات طبيعة {estimated_time} بناءً على المسافة القوسية للبرج {h12_sign}."
+        return f"⏱️ **فحص توقيت الأذية (قديمة أم جديدة):** الحالة تصنف كـ **[{status_type}]**. نطاق بدء الأذى بالقديم أو الجديد: {timing_details} (المسافة القوسية للحاكم: {arc_diff:.2f}°)."
 
     def analyze_magic_perpetrator(self) -> Dict[str, Any]:
         h12_sign_idx = (self.ascendant_sign_idx + 11) % 12
@@ -383,12 +389,25 @@ class AutoChartReader:
         else:
             perpetrator_age = "في سن الشباب (تحت 30 سنة - طاقة سريعة أو طائشة)"
 
-        # 3. صلة القرابة
-        relative_houses = [3, 4, 8, 9, 5]
-        if h12_ruler_house in relative_houses:
-            is_relative_text = "نعم، الفاعل من الأقارب أو الأصهار والمحيط العائلي المباشر"
+        # 3. صلة القرابة ودرجتها بالدم أو الصهر بدقة تامة
+        kinship_degree_text = "لا يوجد صلة قرابة بالدم (شخص خارجي / جار / زميل / معرفة خارجية)"
+        is_relative_text = "ليس بالضرورة من الأقارب المباشرين"
+
+        if h12_ruler_house in [3, 4]:
+            kinship_degree_text = "من المحيط اليومي المباشر(قريب، أو شخص في محيط الحركة اليومية أو الإخوة، الأخوات، الأب، الأم، أو أفراد العائلة في نفس المسكن)."
+            is_relative_text = "محتمل أن يكون قريباً غير مباشر أو شخصاً من المحيط اليومي أو الأقارب من الدرجة الأولى (1)"
+        elif h12_ruler_house in [6]:
+            kinship_degree_text = "من الدرجة الثانية (2) بالدم (الأعمام، العمات، الأخوال، الخالات)."
+            is_relative_text = "نعم، الفاعل من الأقارب من الدرجة الثانية (2)"
+        elif h12_ruler_house in [5, 11]:
+            kinship_degree_text = "من الدرجة الثالثة (3) بالدم (أبناء العمومة، أبناء الأخوال، أو أصدقاء مقربون جداً بمثابة الأقارب)."
+            is_relative_text = "نعم، الفاعل من الأقارب من الدرجة الثالثة (3)"
+        elif h12_ruler_house in [9, 10, 8]:
+            kinship_degree_text = "من الدرجة الرابعة (4) أو أقارب بالصهر والمصاهرة (زوجة الأخ، أم الزوج / أم الزوجة - الحماة، أو أهل الشريك)."
+            is_relative_text = "نعم، الفاعل من الأقارب بالصهر / الدرجة الرابعة (4)"
         else:
-            is_relative_text = "ليس بالضرورة من الأقارب المباشرين (قد يكون جاراً، زميل عمل، أو معرفة خارجية)"
+            is_relative_text = "لا يوجد صلة قرابة بالدم نهائياً"
+            kinship_degree_text = "لا توجد صلة قرابة بالدم (شخص خارجي، جار، زميل عمل، أو شخص بعيد عن العائلة)."
 
         # 4. مكان وجود الفاعل
         mutable_signs = ["الجوزاء", "العذراء", "القوس", "الحوت"]
@@ -441,6 +460,7 @@ class AutoChartReader:
             "perpetrator_gender": perpetrator_gender,
             "perpetrator_age": perpetrator_age,
             "is_relative_text": is_relative_text,
+            "kinship_degree_text": kinship_degree_text,
             "distance_text": distance_text,
             "star_clues": star_clues,
             "damage_timing": damage_timing,
@@ -452,7 +472,78 @@ class AutoChartReader:
         }
 
 # ==========================================
-# 3. واجهة المستخدم عبر Streamlit (ديناميكية للتحديث الفوري)
+# 3. الدالة الجديدة: اقتراح العلاج الروحاني وتحديد الآيات القرآنية والسورة والتكرار والطريقة
+# ==========================================
+def suggest_spiritual_treatment(val_first: int, val_mother: int, full_name: str, full_mother_name: str) -> Dict[str, Any]:
+    """دالة مقترحة لتقديم العلاج الروحاني (فك تأثير السحر) بناءً على القيم الحرفية لاسم الشخص واسم أمه"""
+    combined_val = val_first + val_mother
+    treatment_index = (combined_val % 7) + 1
+
+    treatments_db = {
+        1: {
+            "surah_name": "سورة البقرة",
+            "surah_num": 2,
+            "verse_num": "الآية 102 والخواتيم (285-286)",
+            "verse_text": "وَاتَّبَعُوا مَا تَتْلُوا الشَّيَاطِينُ عَلَىٰ مُلْكِ سُلَيْمَانَ... وَاتَّقُوا اللَّهَ وَيُعَلِّمُكُمُ اللَّهُ",
+            "repetition": "تكرار الآية (102) 21 مرة يومياً مع قراءة الخواتيم 3 مرات",
+            "method": "القراءة بصوت هادئ على إناء ماء طاهر ونقي مع النفث فيه، والشرب منه على ريق النوم والصباح، والغتسال بماء مرقي لمدة 7 أيام متتالية لإبطال السحر المدفون."
+        },
+        2: {
+            "surah_name": "سورة الأعراف",
+            "surah_num": 7,
+            "verse_num": "الآيات 117 إلى 122",
+            "verse_text": "وَأَوْحَيْنَا إِلَىٰ مُوسَىٰ أَنْ أَلْقِ عَصَاكَ... فَوَقَعَ الْحَقُّ وَبَطَلَ مَا كَانُوا يَعْمَلُونَ",
+            "repetition": "تكرار الآيات (117-122) 41 مرة بعد صلاة الفجر",
+            "method": "القراءة على زيت زيتون مبارك ودهن مواضع الألم أو الجسد به، وقراءتها على ماء الشرب لفك سحر العقد والربط وإبطال أثره."
+        },
+        3: {
+            "surah_name": "سورة يونس",
+            "surah_num": 10,
+            "verse_num": "الآيتان 81 و 82",
+            "verse_text": "فَلَمَّا أَلْقَوْا قَالَ مُوسَىٰ مَا جِئْتُم بِهِ السِّحْرُ إِنَّ اللَّهَ سَيُبْطِلُهُ إِنَّ اللَّهَ لَا يُصْلِحُ عَمَلَ الْمُفْسِدِينَ",
+            "repetition": "تكرار الآيتين 70 مرة بتركيز ويقين يومياً",
+            "method": "القراءة الكثيفة على إناء ماء كبير بنية إبطال السحر المرشوش أو المأكول، والشرب منه مستمراً والاغتسال به خارج دورات المياه."
+        },
+        4: {
+            "surah_name": "سورة طه",
+            "surah_num": 20,
+            "verse_num": "الآيات 65 إلى 69",
+            "verse_text": "قَالُوا يَا مُوسَىٰ إِمَّا أَن تُلْقِيَ وَإِمَّا أَن نَّكُونَ أَوَّلَ مَنْ أَلْقَىٰ... وَلَا يُفْلِحُ السَّاحِرُ حَيْثُ أَتَىٰ",
+            "repetition": "تكرار الآية (69) 33 مرة بعد كل صلاة مكتوبة",
+            "method": "وضع اليد اليمنى على الصدر وقراءة الآيات مع النفث والمسح، مع شرب ماء مقروء عليه مضاف إليه قطرات من مسك الروحانيات الأبيض."
+        },
+        5: {
+            "surah_name": "سورة الإخلاص والمعوذتان (الفلق والناس)",
+            "surah_num": "112, 113, 114",
+            "verse_num": "السور الثلاث كاملة مع آية الكرسي",
+            "verse_text": "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ... وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ",
+            "repetition": "تكرار كل سورة 100 مرة صباحاً ومساءً",
+            "method": "الجمع بين الكفين والنفث فيهما بعد القراءة ومسح الجسد كله، وقراءتها على زجاجة ماء عذب للشرب المستمر والحماية الشاملة."
+        },
+        6: {
+            "surah_name": "سورة الصافات وسورة الحشر",
+            "surah_num": "37 و 59",
+            "verse_num": "أول الصافات (1 إلى 10) وخواتيم الحشر",
+            "verse_text": "وَالصَّافَّاتِ صَفًّا... لَوْ أَنزَلْنَا هَٰذَا الْقُرْآنَ عَلَىٰ جَبَلٍ لَّرَأَيْتَهُ خَاشِعًا مُّتَصَدِّعًا",
+            "repetition": "قراءة سورة الصافات كاملة مرة واحدة وخواتيم الحشر 7 مرات",
+            "method": "الاستماع بسماعات الأذن بخشوع لآيات التحصين وبطلان السحر مع شرب ماء مرقي مضاف إليه قطرات من ماء الورد الطبيعي."
+        },
+        7: {
+            "surah_name": "سورة الفاتحة وآية الكرسي",
+            "surah_num": "1 و 2",
+            "verse_num": "الفاتحة الكبرى وآية الكرسي (255)",
+            "verse_text": "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ",
+            "repetition": "قراءة الفاتحة 7 مرات وآية الكرسي 21 مرة متتالية",
+            "method": "القراءة بصوت جهرية هادئ على ماء زمزم أو ماء عذب طاهر مع الاستحمام بماء مرقي خارج الحمام والالتزام بالاستغفار."
+        }
+    }
+
+    chosen_treatment = treatments_db.get(treatment_index, treatments_db[1])
+    chosen_treatment["name_sum"] = combined_val
+    return chosen_treatment
+
+# ==========================================
+# 4. واجهة المستخدم عبر Streamlit (ديناميكية للتحديث الفوري)
 # ==========================================
 st.set_page_config(page_title="نظام كشف الطاقات السلبية المطور", layout="wide")
 
@@ -513,7 +604,7 @@ is_night_radio = st.radio(
     index=1
 )
 
-submitted = st.button("✨ إطلاق التقرير التراثي الشامل وكشف الفاعل والنجوم الثابتة")
+submitted = st.button("✨ إطلاق التقرير التراثي الشامل وكشف الفاعل والنجوم الثابتة والعلاج الروحاني")
 
 if submitted:
     if first_name_type == "مفرد":
@@ -551,6 +642,7 @@ if submitted:
 
         chart_reader = AutoChartReader(jd, lat, lng)
         magic_analysis = chart_reader.analyze_magic_perpetrator()
+        treatment_proposal = suggest_spiritual_treatment(val_first, val_mother, full_first_name, full_mother_name)
 
         # 1. حساب أرقام تاريخ الميلاد
         birth_date_str = f"{birth_date.day}.{birth_date.month}.{birth_date.year}"
@@ -603,7 +695,7 @@ if submitted:
             st.markdown(f"### 🧮 **المجموع الثماني الكلي:** `{total_sum}` | **النتيجة النهائية (المقسوم على 12):** `{final_result_num}`")
 
         st.markdown("---")
-        st.subheader("🕵️‍♂️ تقرير كشف صفات الفاعل وتوقيت الأذية والدلالات النجمية:")
+        st.subheader("🕵️‍♂️ تقرير كشف صفات الفاعل وتوقيت الأذية ودرجة القرابة والدلالات النجمية:")
         
         st.info(f"📌 **تحليل البيت الثاني عشر:** برج البيت هو ({magic_analysis['h12_sign']}) وحاكمه ({magic_analysis['h12_ruler']}) يستقر في **البيت {magic_analysis['h12_ruler_house']}**.")
         st.info(magic_analysis['damage_timing'])
@@ -611,7 +703,7 @@ if submitted:
         col_p1, col_p2 = st.columns(2)
         with col_p1:
             st.success(f"👤 **جنس الفاعل المتوقع:** {magic_analysis['perpetrator_gender']}")
-            st.success(f"👥 **صلة القرابة:** {magic_analysis['is_relative_text']}")
+            st.success(f"👥 **صلة القرابة والدرجة:** {magic_analysis['kinship_degree_text']}")
         with col_p2:
             st.warning(f"⏳ **الفئة العمرية:** {magic_analysis['perpetrator_age']}")
             st.warning(f"🌍 **النطاق الجغرافي / البعد:** {magic_analysis['distance_text']}")
@@ -629,6 +721,13 @@ if submitted:
 
         for nature in magic_analysis['nature_clues']:
             st.error(nature)
+
+        st.markdown("---")
+        st.subheader("🌿 مقترح العلاج الروحاني وتفكيك السحر (حسب الاسم واسم الأم):")
+        st.success(f"📖 **السورة المقترحة:** {treatment_proposal['surah_name']} (رقم السورة: {treatment_proposal['surah_num']})")
+        st.info(f"📜 **الآية أو المقطع العلاجي:** {treatment_proposal['verse_num']}\n\n> *\"{treatment_proposal['verse_text']}\"*")
+        st.warning(f"🔄 **مدى التكرار:** {treatment_proposal['repetition']}")
+        st.error(f"🛠️ **طريقة الاستخدام والتحضير:** {treatment_proposal['method']}")
 
         st.markdown("---")
         st.subheader("📜 التشخيص الروحي النهائي للحالة:")
@@ -673,7 +772,7 @@ if submitted:
 </head>
 <body>
     <div class="container">
-        <h1>🔮 التقرير الروحاني والتنجيم المطور لكشف الفاعل والنجوم الثابتة</h1>
+        <h1>🔮 التقرير الروحاني والتنجيم المطور لكشف الفاعل والعلاج القرآني</h1>
         <div class="meta">
             <b>اسم المستفيد:</b> {full_first_name} | <b>اسم الأم:</b> {full_mother_name} | <b>تاريخ الميلاد:</b> {birth_date} ({birth_hour}:{birth_minute}) | <b>الموقع:</b> {selected_country_name} - {selected_city_name}
         </div>
@@ -694,18 +793,27 @@ if submitted:
             <p style="font-size: 16px; font-weight: bold; color: #1e3a8a;">• المجموع الثماني الكلي: {total_sum} | النتيجة النهائية: {final_result_num}</p>
         </div>
 
-        <h2>🕵️‍♂️ تقرير كشف هوية الفاعل وتوقيت الأذية:</h2>
+        <h2>🕵️‍♂️ تقرير كشف هوية الفاعل وتوقيت الأذية ودرجة القرابة:</h2>
         <div class="card" style="border-right-color: #d97706;">
             <p>👤 <b>جنس الفاعل المتوقع:</b> {magic_analysis['perpetrator_gender']}</p>
             <p>⏳ <b>الفئة العمرية للفاعل:</b> {magic_analysis['perpetrator_age']}</p>
-            <p>👥 <b>صلة القرابة:</b> {magic_analysis['is_relative_text']}</p>
+            <p>👥 <b>صلة القرابة ودرجتها:</b> {magic_analysis['kinship_degree_text']}</p>
             <p>🌍 <b>النطاق الجغرافي / البعد:</b> {magic_analysis['distance_text']}</p>
-            <p>⏱️ <b>تقدير توقيت الأذية:</b> {magic_analysis['damage_timing']}</p>
+            <p>⏱️ <b>تقدير توقيت الأذية ونطاق بدء الأذى:</b> {magic_analysis['damage_timing']}</p>
             <hr>
             <p><b>تحليل البيت الثاني عشر:</b> برج البيت هو ({magic_analysis['h12_sign']}) وحاكمه ({magic_analysis['h12_ruler']}) يستقر في البيت {magic_analysis['h12_ruler_house']}.</p>
             <ul>
                 {perpetrator_html_items}
             </ul>
+        </div>
+
+        <h2>🌿 مقترح العلاج الروحاني وفك السحر (مخصص بالاسم واسم الأم):</h2>
+        <div class="card" style="border-right-color: #16a34a;">
+            <p>📖 <b>السورة المقترحة ورقمها:</b> {treatment_proposal['surah_name']} (رقم السورة: {treatment_proposal['surah_num']})</p>
+            <p>📜 <b>الآية أو المقطع العلاجي:</b> {treatment_proposal['verse_num']}</p>
+            <p>💬 <b>نص الآية الكريمة:</b> <em>"{treatment_proposal['verse_text']}"</em></p>
+            <p>🔄 <b>مدى التكرار المطلوب:</b> {treatment_proposal['repetition']}</p>
+            <p>🛠️ <b>طريقة الاستخدام والكيفية:</b> {treatment_proposal['method']}</p>
         </div>
 
         <h2>⭐ الاتصالات النجمية الكبرى:</h2>
