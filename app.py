@@ -82,7 +82,7 @@ def get_utc_julian_day(date_obj: date, time_obj: time, tz_str: str) -> float:
 # 1. جدول الحروف الأبجدية الكامل (الجمل الكبير)
 # ==========================================
 ABJAD_DICT = {
-    'ا': 1, 'أ': 1, 'إ': 1, 'آ': 1,
+    'ا': 1, 'أ': 1, 'إ': 1, 'آ': 1, 'ء': 1,
     'ب': 2,
     'ج': 3,
     'د': 4,
@@ -171,8 +171,6 @@ def calculate_name_value(name_part, is_composite_first_box=False):
     if not name_part:
         return 0
     for i, char in enumerate(name_part):
-        if char in ['ء']:
-            continue
         if char == 'ة':
             if is_composite_first_box and i == len(name_part) - 1:
                 total += 400
