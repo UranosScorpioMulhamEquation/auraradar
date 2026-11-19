@@ -397,43 +397,43 @@ DEGREE_NAMES = {
     2: "قرابة دم من الدرجة الثانية (الأجداد / الأعمام / العمات / الأخوال / الخالات)",
     3: "قرابة دم من الدرجة الثالثة (أبناء العمومة والخؤولة)",
     4: "قرابة مصاهرة وعلاقة زوجية (بدون صلة دم)",
-    0: "خارج دائرة القرابة العائلية (من المحيط الاجتماعي أو العمل)",
+    0: "خارج دائرة الرحم والدم (من الجيران أو محيط السكن أو المعارف أو العمل)",
 }
 
-# مرشحو القرابة المفصلون (تم فصل جهة الأب وجهة الأم بدقة)
+# مرشحو القرابة المفصلون (تم فصل جهة الأب وجهة الأم بدقة وتمييز الجيران والمحيط بعدالة)
 KIN_CANDIDATES = [
     {"key": "mother", "m": "الأم", "f": "الأم", "gender": "F", "degree": 1, "blood": True, "side_type": "direct",
      "detail": "الأم المباشرة — علاقة منزلية يومية لصيقة وتداخل مباشر في شؤون السكن والقرار", "houses": [10, 4], "planets": ["القمر", "الزهرة"], "gen": (27, 7)},
     {"key": "father", "m": "الأب", "f": "الأب", "gender": "M", "degree": 1, "blood": True, "side_type": "direct",
      "detail": "الأب المباشر — سلطة عائلية مباشرة وتحكم في المسكن أو الشؤون المادية", "houses": [4, 10], "planets": ["الشمس", "زحل"], "gen": (31, 7)},
     {"key": "sister", "m": "الأخت الشقيقة أو من أحد الأبوين", "f": "الأخت الشقيقة أو من أحد الأبوين", "gender": "F", "degree": 1, "blood": True, "side_type": "direct",
-     "detail": "الأخت — احتكاك متكرر ومقارنة دائمة في الرزق والزواج ومكانة العائلة", "houses": [3, 11], "planets": ["الزهرة", "عطارد"], "gen": (0, 9)},
+     "detail": "الأخت — احتكاك متكرر ومقارنة دائمة في الرزق والزواج ومكانة العائلة", "houses": [3, 4], "planets": ["الزهرة", "عطارد"], "gen": (0, 9)},
     {"key": "brother", "m": "الأخ الشقيق أو من أحد الأبوين", "f": "الأخ الشقيق أو من أحد الأبوين", "gender": "M", "degree": 1, "blood": True, "side_type": "direct",
-     "detail": "الأخ — تنافس عائلي أو نزاع على حقوق وميراث أو سلطة داخل الأسرة", "houses": [3, 11], "planets": ["المريخ", "عطارد"], "gen": (0, 9)},
+     "detail": "الأخ — تنافس عائلي أو نزاع على حقوق وميراث أو سلطة داخل الأسرة", "houses": [3, 4], "planets": ["المريخ", "عطارد"], "gen": (0, 9)},
     {"key": "daughter", "m": "الابنة", "f": "الابنة", "gender": "F", "degree": 1, "blood": True, "side_type": "direct",
      "detail": "الابنة — توتر حاد في العلاقة الأبوية/الأمومية وتداخل يومي في المنزل", "houses": [5], "planets": ["الزهرة", "القمر"], "gen": (-27, 8), "adult_only": True},
     {"key": "son", "m": "الابن", "f": "الابن", "gender": "M", "degree": 1, "blood": True, "side_type": "direct",
      "detail": "الابن — صراع على القرار أو الموارد أو توتر شديد داخل البيت", "houses": [5], "planets": ["الشمس", "المريخ"], "gen": (-27, 8), "adult_only": True},
     {"key": "grandmother", "m": "الجدة", "f": "الجدة", "gender": "F", "degree": 2, "blood": True, "side_type": "paternal_or_maternal",
-     "detail": "الجدة — من كبار العائلة ولها نفوذ قديم وتوجيه مؤثر داخل الأسرة", "houses": [7, 1], "planets": ["زحل", "القمر"], "gen": (55, 9)},
+     "detail": "الجدة — من كبار العائلة ولها نفوذ قديم وتوجيه مؤثر داخل الأسرة", "houses": [4, 10], "planets": ["زحل", "القمر"], "gen": (55, 9)},
     {"key": "grandfather", "m": "الجد", "f": "الجد", "gender": "M", "degree": 2, "blood": True, "side_type": "paternal_or_maternal",
-     "detail": "الجد — من كبار العائلة ومرجعيته مرتبطة بالأملاك والميراث", "houses": [7, 1], "planets": ["زحل", "الشمس"], "gen": (58, 9)},
+     "detail": "الجد — من كبار العائلة ومرجعيته مرتبطة بالأملاك والميراث", "houses": [4, 10], "planets": ["زحل", "الشمس"], "gen": (58, 9)},
     {"key": "paternal_aunt", "m": "العمة (أخت الأب)", "f": "العمة (أخت الأب)", "gender": "F", "degree": 2, "blood": True, "side_type": "paternal",
-     "detail": "العمة من جهة الأب — تدخل متكرر في شؤون عائلة المستفيد ومقارنات مالية أو عائلية", "houses": [6, 5], "planets": ["الزهرة", "زحل"], "gen": (14, 12)},
+     "detail": "العمة من جهة الأب — تدخل متكرر في شؤون عائلة المستفيد ومقارنات مالية أو عائلية", "houses": [5, 4, 6], "planets": ["الزهرة", "زحل"], "gen": (14, 12)},
     {"key": "paternal_uncle", "m": "العم (أخو الأب)", "f": "العم (أخو الأب)", "gender": "M", "degree": 2, "blood": True, "side_type": "paternal",
-     "detail": "العم من جهة الأب — ارتباط مباشر بشؤون الإرث أو العقار أو الزعامة العائلية", "houses": [6, 5], "planets": ["زحل", "المريخ"], "gen": (16, 12)},
+     "detail": "العم من جهة الأب — ارتباط مباشر بشؤون الإرث أو العقار أو الزعامة العائلية", "houses": [5, 4, 6], "planets": ["زحل", "المريخ"], "gen": (16, 12)},
     {"key": "maternal_aunt", "m": "الخالة (أخت الأم)", "f": "الخالة (أخت الأم)", "gender": "F", "degree": 2, "blood": True, "side_type": "maternal",
-     "detail": "الخالة من جهة الأم — مطّلعة على أسرار البيت وتتردد على الأسرة باستمرار", "houses": [12, 6], "planets": ["القمر", "عطارد"], "gen": (14, 12)},
+     "detail": "الخالة من جهة الأم — مطّلعة على أسرار البيت وتتردد على الأسرة باستمرار", "houses": [12, 10], "planets": ["القمر", "عطارد"], "gen": (14, 12)},
     {"key": "maternal_uncle", "m": "الخال (أخو الأم)", "f": "الخال (أخو الأم)", "gender": "M", "degree": 2, "blood": True, "side_type": "maternal",
-     "detail": "الخال من جهة الأم — علاقة خفية أو مالية متوترة مع أسرة الأم", "houses": [12, 6], "planets": ["عطارد", "المشتري"], "gen": (16, 12)},
+     "detail": "الخال من جهة الأم — علاقة خفية أو مالية متوترة مع أسرة الأم", "houses": [12, 10], "planets": ["عطارد", "المشتري"], "gen": (16, 12)},
     {"key": "paternal_cousin_f", "m": "بنت العم أو بنت العمة (من جهة الأب)", "f": "بنت العم أو بنت العمة (من جهة الأب)", "gender": "F", "degree": 3, "blood": True, "side_type": "paternal",
-     "detail": "قريبة من جهة الأب في الجيل نفسه — دافع غيرة أو تنافس عاطفي/عائلي", "houses": [11, 5], "planets": ["الزهرة", "زحل"], "gen": (0, 12)},
+     "detail": "قريبة من جهة الأب في الجيل نفسه — دافع غيرة أو تنافس عاطفي/عائلي", "houses": [5, 4], "planets": ["الزهرة", "زحل"], "gen": (0, 12)},
     {"key": "paternal_cousin_m", "m": "ابن العم أو ابن العمة (من جهة الأب)", "f": "ابن العم أو ابن العمة (من جهة الأب)", "gender": "M", "degree": 3, "blood": True, "side_type": "paternal",
-     "detail": "قريب من جهة الأب في الجيل نفسه — رغبة في الزواج/التحكم أو منافسة على الميراث والمكانة", "houses": [11, 5], "planets": ["المريخ", "زحل"], "gen": (0, 12)},
+     "detail": "قريب من جهة الأب في الجيل نفسه — رغبة في الزواج/التحكم أو منافسة على الميراث والمكانة", "houses": [5, 4], "planets": ["المريخ", "زحل"], "gen": (0, 12)},
     {"key": "maternal_cousin_f", "m": "بنت الخال أو بنت الخالة (من جهة الأم)", "f": "بنت الخال أو بنت الخالة (من جهة الأم)", "gender": "F", "degree": 3, "blood": True, "side_type": "maternal",
-     "detail": "قريبة من جهة الأم في الجيل نفسه — تدخل متكرر واطلاع مباشر على خصوصيات المستفيد", "houses": [11, 12], "planets": ["القمر", "الزهرة", "عطارد"], "gen": (0, 12)},
+     "detail": "قريبة من جهة الأم في الجيل نفسه — تدخل متكرر واطلاع مباشر على خصوصيات المستفيد", "houses": [12, 10], "planets": ["القمر", "الزهرة", "عطارد"], "gen": (0, 12)},
     {"key": "maternal_cousin_m", "m": "ابن الخال أو ابن الخالة (من جهة الأم)", "f": "ابن الخال أو ابن الخالة (من جهة الأم)", "gender": "M", "degree": 3, "blood": True, "side_type": "maternal",
-     "detail": "قريب من جهة الأم في الجيل نفسه — تعلق عاطفي أو حسد من النجاح والظهور", "houses": [11, 12], "planets": ["عطارد", "القمر"], "gen": (0, 12)},
+     "detail": "قريب من جهة الأم في الجيل نفسه — تعلق عاطفي أو حسد من النجاح والظهور", "houses": [12, 10], "planets": ["عطارد", "القمر"], "gen": (0, 12)},
     {"key": "stepmother", "m": "زوجة الأب", "f": "زوجة الأب", "gender": "F", "degree": 4, "blood": False, "side_type": "inlaw",
      "detail": "من عائلة الأب بالمصاهرة — توتر حول النفوذ والاهتمام والموارد داخل الأسرة", "houses": [10, 8], "planets": ["الزهرة", "المريخ", "زحل"], "gen": (15, 10)},
     {"key": "mother_in_law", "m": "الحماة (أم الزوج أو أم الزوجة)", "f": "الحماة (أم الزوج أو أم الزوجة)", "gender": "F", "degree": 4, "blood": False, "side_type": "inlaw",
@@ -447,13 +447,15 @@ KIN_CANDIDATES = [
     {"key": "spouse", "m": "الزوج أو الخطيب (حالي أو سابق)", "f": "الزوجة أو الخطيبة (حالية أو سابقة)", "gender": "S", "degree": 4, "blood": False, "side_type": "inlaw",
      "detail": "شريك ارتباط حالي أو سابق — رغبة في الربط والسيطرة أو انتقام بعد انفصال", "houses": [7, 1], "planets": ["الزهرة", "المريخ"], "gen": (0, 10), "adult_only": True},
     {"key": "neighbor", "m": "جار ملاصق أو في نفس الحي", "f": "جارة ملاصقة أو في نفس الحي", "gender": "A", "degree": 0, "blood": False, "side_type": "external",
-     "detail": "من الجيران في محيط السكن — يراقب الداخل والخارج ويسهل عليه الوصول لعتبة البيت", "houses": [3, 4], "planets": ["عطارد", "القمر"], "gen": (0, 18)},
-    {"key": "friend", "m": "صديق مقرب أو رفيق دراسة", "f": "صديقة مقربة أو رفيقة دراسة", "gender": "A", "degree": 0, "blood": False, "side_type": "external",
-     "detail": "من دائرة الصداقة المقربة — مطّلع على أسرار المستفيد وأحواله الشخصية", "houses": [11, 3], "planets": ["المشتري", "الزهرة", "عطارد"], "gen": (0, 15)},
-    {"key": "colleague", "m": "زميل أو مسؤول في محيط العمل", "f": "زميلة أو مسؤولة في محيط العمل", "gender": "A", "degree": 0, "blood": False, "side_type": "external",
-     "detail": "من محيط العمل والمهنة — غيرة من الترقية والرزق أو تنافس وظيفي مباشر", "houses": [10, 6], "planets": ["الشمس", "زحل", "عطارد"], "gen": (0, 16)},
+     "detail": "من الجيران الملاصقين في محيط السكن — يراقب الداخل والخارج ويسهل عليه الوصول لعتبة البيت والضيافة", "houses": [3, 6, 4], "planets": ["عطارد", "القمر", "زحل"], "gen": (0, 16)},
+    {"key": "neighbor_circle", "m": "شخص معروف من محيط السكن أو الشارع (دون صلة دم)", "f": "سيدة معروفة من محيط السكن أو الشارع (دون صلة دم)", "gender": "A", "degree": 0, "blood": False, "side_type": "external",
+     "detail": "من محيط الجوار والزيارات المنزلية المتكررة — يحتك يومياً بالمستفيد ويعرف تفاصيل دخوله وخروجه", "houses": [6, 3, 11], "planets": ["القمر", "عطارد", "المريخ", "زحل"], "gen": (2, 18)},
+    {"key": "friend", "m": "صديق مقرب أو رفيق معرفة قديمة", "f": "صديقة مقربة أو رفيقة معرفة قديمة", "gender": "A", "degree": 0, "blood": False, "side_type": "external",
+     "detail": "من دائرة الصداقة والمعارف المقربين — مطّلع على أسرار المستفيد وأحواله الشخصية", "houses": [11, 3, 7], "planets": ["المشتري", "الزهرة", "عطارد"], "gen": (0, 15)},
+    {"key": "colleague", "m": "زميل أو شخص في محيط العمل والمعاملات اليومية", "f": "زميلة أو سيدة في محيط العمل والمعاملات اليومية", "gender": "A", "degree": 0, "blood": False, "side_type": "external",
+     "detail": "من محيط العمل أو الاحتكاك المعيشي اليومي — غيرة من الرزق أو تنافس مباشر", "houses": [6, 10, 11], "planets": ["الشمس", "زحل", "عطارد", "القمر"], "gen": (0, 16)},
     {"key": "rival", "m": "منافس أو شريك مالي/عاطفي سابق", "f": "منافسة أو شريكة مالية/عاطفية سابقة", "gender": "A", "degree": 0, "blood": False, "side_type": "external",
-     "detail": "خصم أو شريك قديم — خلاف مالي أو عاطفي لم يُغلق ملفه بعد", "houses": [7, 5], "planets": ["الزهرة", "المريخ"], "gen": (0, 14)},
+     "detail": "خصم أو شريك قديم — خلاف مالي أو عاطفي لم يُغلق ملفه بعد", "houses": [7, 5, 11], "planets": ["الزهرة", "المريخ"], "gen": (0, 14)},
     {"key": "stranger", "m": "شخص من المعارف البعيدة (أو عبر وسيط خارجي)", "f": "شخصية من المعارف البعيدة (أو عبر وسيط خارجي)", "gender": "A", "degree": 0, "blood": False, "side_type": "external",
      "detail": "من خارج الدائرة القريبة — يعمل من مسافة بعيدة عبر المعلومات الشخصية والاسم", "houses": [9, 12, 8], "planets": ["نبتون", "راهو", "أورانوس"], "gen": (0, 20)},
 ]
@@ -886,7 +888,7 @@ class AutoChartReader:
     def _candidate_score(
         self, c: Dict, ruler: str, ruler_p: Dict, p12: List[str],
         is_male: bool, est_age: float, est_sd: float, ben_age: float,
-        pat_score: float, mat_score: float
+        pat_score: float, mat_score: float, kin_axis: float, has_h4_asp: bool
     ) -> float:
         s = 0.0
         h = ruler_p["house"]
@@ -907,13 +909,24 @@ class AutoChartReader:
                 if a:
                     s += ASPECT_W[a[0]] * (1 - a[1] / 12)
         if c["gender"] == "M":
-            s += 3.2 if is_male else -3.2
+            s += 3.0 if is_male else -3.5
         elif c["gender"] == "F":
-            s += -3.2 if is_male else 3.2
+            s += -3.5 if is_male else 3.0
+        elif c["gender"] == "A":
+            s += 2.8
         if c["side_type"] == "paternal":
             s += (pat_score - mat_score) * 0.6
         elif c["side_type"] == "maternal":
             s += (mat_score - pat_score) * 0.6
+
+        # موازنة محور ذوي الرحم مقابل الجيران والمحيط الاجتماعي
+        if c["blood"]:
+            s += kin_axis * 0.95
+        else:
+            s -= kin_axis * 0.95
+            if c["degree"] == 0 and h in (3, 6, 11) and not has_h4_asp:
+                s += 1.2
+
         expected = ben_age + c["gen"][0]
         sd = math.sqrt(c["gen"][1] ** 2 + est_sd ** 2)
         z = (est_age - expected) / sd
@@ -940,6 +953,75 @@ class AutoChartReader:
         if pat == mat:
             pat += 0.2 if ruler_p["sign_idx"] % 2 == 0 else -0.2
 
+        h3_ruler = SIGN_RULERS[self._house_sign(3)]
+        h4_ruler = SIGN_RULERS[self._house_sign(4)]
+        h10_ruler = SIGN_RULERS[self._house_sign(10)]
+        h11_ruler = SIGN_RULERS[self._house_sign(11)]
+
+        h4_asp = aspect_info(ruler_p["lon"], self.P[h4_ruler]["lon"], 6.0) if h4_ruler != ruler and h4_ruler in self.P else None
+        h10_asp = aspect_info(ruler_p["lon"], self.P[h10_ruler]["lon"], 6.0) if h10_ruler != ruler and h10_ruler in self.P else None
+        h3_asp = aspect_info(ruler_p["lon"], self.P[h3_ruler]["lon"], 6.0) if h3_ruler != ruler and h3_ruler in self.P else None
+        h11_asp = aspect_info(ruler_p["lon"], self.P[h11_ruler]["lon"], 6.0) if h11_ruler != ruler and h11_ruler in self.P else None
+
+        blood_signals = 0.0
+        external_signals = 0.0
+        axis_reasons: List[str] = []
+
+        if h4_asp:
+            blood_signals += 1.8
+            axis_reasons.append(f"اتصال حاكم 12 بحاكم الرابع ({h4_ruler}) بزاوية {h4_asp[0]} يرجح محور الأهل")
+        elif h4_ruler != ruler:
+            external_signals += 1.8
+            axis_reasons.append(f"انقطاع الاتصال بين حاكم 12 ({ruler}) وحاكم الرابع ({h4_ruler}) يُضعف صلة الرحم")
+
+        if h10_asp:
+            blood_signals += 1.5
+
+        dignity_score = ruler_p["dignity"][0]
+        dignity_label = ruler_p["dignity"][1]
+        if ruler_p["house"] in (4, 10) and dignity_score >= 0:
+            blood_signals += 1.8
+            axis_reasons.append(f"وقوع الحاكم في الوتد العائلي (البيت {ruler_p['house']}) بقوة ذاتية")
+
+        if dignity_score >= 2:
+            blood_signals += 1.2
+        elif dignity_score < 0:
+            external_signals += 1.5
+            axis_reasons.append(f"الحاكم في {dignity_label} وهي دلالة تراثية على الأذية من الجار أو الغريب")
+        elif not h4_asp and not h10_asp:
+            external_signals += 0.8
+
+        if ruler_p["house"] in (3, 11):
+            external_signals += 2.2
+            axis_reasons.append(f"وقوع الحاكم في البيت {ruler_p['house']} (دائرة الجيران أو المعارف)")
+        elif ruler_p["house"] in (6, 7):
+            external_signals += 2.0
+            axis_reasons.append(f"وقوع الحاكم في البيت {ruler_p['house']} (محيط الاحتكاك اليومي والجوار المعيشي)")
+
+        if h3_asp or h11_asp:
+            external_signals += 1.6
+            axis_reasons.append("اتصال الحاكم برب بيت الجيران (3) أو المعارف (11)")
+
+        for ext_p in ("عطارد", "أورانوس", "نبتون", "راهو"):
+            if ext_p != ruler and ext_p in self.P:
+                if aspect_info(ruler_p["lon"], self.P[ext_p]["lon"], 6.0) or ext_p in p12:
+                    external_signals += 0.9
+
+        if ruler_p["sign"] in AIR_SIGNS:
+            external_signals += 0.8
+        if ruler_p["sign"] in MUTABLE_SIGNS:
+            external_signals += 0.5
+
+        if ruler_p["house"] in (1, 4, 5, 10, 12):
+            if aspect_info(ruler_p["lon"], self.P["الشمس"]["lon"], 6.0) or aspect_info(ruler_p["lon"], self.P["القمر"]["lon"], 6.0):
+                blood_signals += 1.2
+
+        kin_axis = blood_signals - external_signals
+        if kin_axis >= 0.4:
+            kin_axis_summary = f"ميزان التفريق الفلكي يرجح ذوي الرحم (فارق +{kin_axis:.1f}): {axis_reasons[0] if axis_reasons else 'قوة وتد الأهل والأصل'}."
+        else:
+            kin_axis_summary = f"ميزان التفريق الفلكي يرجح الجيران والمحيط غير النسبي (فارق {kin_axis:.1f}): {axis_reasons[0] if axis_reasons else 'وقوع الدليل في بيوت الجوار والاحتكاك اليومي دون صلة بحاكم الرابع'}."
+
         cands = []
         for c in KIN_CANDIDATES:
             c = dict(c)
@@ -958,8 +1040,8 @@ class AutoChartReader:
 
         for c in cands:
             c["score"] = self._candidate_score(
-                dict(c, gender=c["gender"] if c["gender"] in ("M", "F") else "A"),
-                ruler, ruler_p, p12, is_male, est_age, est_sd, ben_age, pat, mat
+                dict(c, gender=c["gender"] if c["gender"] in ("M", "F", "A") else "A"),
+                ruler, ruler_p, p12, is_male, est_age, est_sd, ben_age, pat, mat, kin_axis, bool(h4_asp)
             )
 
         ranking = sorted(cands, key=lambda x: x["score"], reverse=True)
@@ -983,9 +1065,10 @@ class AutoChartReader:
         elif top["side_type"] == "direct":
             side_desc = "داخل البيت الأسري المباشر (عصب العائلة الأول)"
         else:
-            side_desc = "من خارج نطاق القرابة العائلية (محيط السكن أو العمل أو المعارف)"
+            side_desc = "من خارج نطاق القرابة بالدم (الجيران أو محيط السكن أو المعارف والعمل)"
 
         self._ev(sec, f"وقوع حاكم البيت 12 ({ruler}) في البيت {ruler_p['house']} مع تطابق الجنس والفارق العمري يقطع بصلة: {top['label']}.")
+        self._ev(sec, kin_axis_summary)
         self._ev(sec, f"تحليل المحور الأبوي/الأمومي: {side_desc}.")
 
         return {
@@ -995,6 +1078,7 @@ class AutoChartReader:
             "exact_label": top["label"],
             "kinship_detail": top["detail"],
             "side_desc": side_desc,
+            "kin_axis_summary": kin_axis_summary,
             "top": top,
         }
 
@@ -1590,6 +1674,7 @@ def build_html_report(ctx: Dict[str, Any]) -> str:
     <p><b>👤 الجنس القطعي:</b> {e(m['perpetrator_gender'])}</p>
     <p><b>🎂 العمر الدقيق:</b> {m['exact_age']} سنة ({e(m['age_stage'])})</p>
     <p><b>🧬 القرابة بالدم:</b> {e(kin['blood_verdict'])}</p>
+    <p><b>⚖️ ميزان التفريق الفلكي (الرحم مقابل الجيران/المحيط):</b> {e(kin['kin_axis_summary'])}</p>
     <p><b>🤝 صلة القرابة بالتفصيل:</b> {e(kin['exact_label'])} — ({e(kin['degree_name'])})</p>
     <p><b>🧭 جهة القرابة وتفصيل العلاقة:</b> {e(kin['side_desc'])} — {e(kin['kinship_detail'])}</p>
     <p><b>🏙️ الإقامة والمدينة:</b> {e(loc['verdict'])}</p>
@@ -1822,6 +1907,7 @@ def main():
         k1, k2 = st.columns(2)
         with k1:
             st.error(f"🧬 **القرابة بالدم:** {kin['blood_verdict']}")
+            st.info(f"⚖️ **ميزان التفريق الفلكي:** {kin['kin_axis_summary']}")
             st.error(f"🤝 **صلة القرابة بالتفصيل:** {kin['exact_label']} ({kin['degree_name']})")
             st.info(f"🧭 **جهة القرابة وتفصيل العلاقة:** {kin['side_desc']} — {kin['kinship_detail']}")
         with k2:
